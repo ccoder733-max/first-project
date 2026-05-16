@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Silli Polytechnic — Mid Exam Portal 2024–2027</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --navy: #0b1638;
+    --gold: #c9a84c;
+    --gold-light: #f0d07a;
+    --cream: #fdf6e3;
+    --text: #1a1a2e;
+    --muted: #6b7280;
+    --border: #e5e0d5;
+    --fail: #ef4444;
+    --shadow: 0 8px 32px rgba(11,22,56,0.12);
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--navy);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── BACKGROUND IMAGE ── */
+  #bg-layer {
+    position: fixed; inset: 0; z-index: 0;
+    background: url('https://images.unsplash.com/photo-1562774053-701939374585?w=1800&q=80') center/cover no-repeat;
+  }
+  #bg-layer::after {
+    content:''; position:absolute; inset:0;
+    background: linear-gradient(135deg,
+      rgba(11,22,56,0.94) 0%,
+      rgba(11,22,56,0.83) 45%,
+      rgba(11,22,56,0.90) 100%);
+  }
+  #bg-layer::before {
+    content:''; position:absolute; inset:0; z-index:1;
+    background: repeating-linear-gradient(
+      -55deg, transparent, transparent 60px,
+      rgba(201,168,76,0.04) 60px, rgba(201,168,76,0.04) 61px);
+  }
+
+  /* ═══════════ LOGIN SCREEN ═══════════ */
+  #login-screen {
+    position: fixed; inset: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: center; padding: 1rem;
+  }
+  .login-card {
+    background: rgba(11,22,56,0.78);
+    border: 1px solid rgba(201,168,76,0.3);
+    backdrop-filter: blur(28px);
+    border-radius: 24px; padding: 2.5rem 2.5rem 2rem;
+    width: 100%; max-width: 420px;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.55);
+    animation: fadeIn 0.5s ease;
+  }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+
+  .login-logo { display:flex; flex-direction:column; align-items:center; gap:0.6rem; margin-bottom:2rem; }
+  .login-icon {
+    width:66px; height:66px;
+    background: linear-gradient(135deg, var(--gold), var(--gold-light));
+    border-radius:16px; display:flex; align-items:center; justify-content:center;
+    font-family:'Playfair Display',serif; font-size:1.85rem; font-weight:900;
+    color:var(--navy); box-shadow:0 6px 20px rgba(201,168,76,0.55);
+  }
+  .login-logo h2 { font-family:'Playfair Display',serif; font-size:1.3rem; font-weight:700; color:var(--cream); text-align:center; }
+  .login-logo p  { font-size:0.74rem; color:var(--gold); letter-spacing:0.1em; text-transform:uppercase; }
+
+  .login-field { display:flex; flex-direction:column; gap:0.35rem; margin-bottom:1rem; }
+  .login-field label { font-size:0.74rem; font-weight:600; color:rgba(201,168,76,0.8); text-transform:uppercase; letter-spacing:0.07em; }
+  .login-field input {
+    background:rgba(255,255,255,0.07); border:1.5px solid rgba(201,168,76,0.25);
+    border-radius:10px; padding:0.72rem 1rem; font-size:0.95rem;
+    font-family:'DM Sans',sans-serif; color:var(--cream); outline:none;
+    transition:border-color 0.2s,box-shadow 0.2s;
+  }
+  .login-field input::placeholder { color:rgba(253,246,227,0.3); }
+  .login-field input:focus { border-color:var(--gold); box-shadow:0 0 0 3px rgba(201,168,76,0.15); }
+
+  .login-error {
+    background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.3);
+    color:#fca5a5; border-radius:8px; padding:0.6rem 0.9rem;
+    font-size:0.84rem; margin-bottom:1rem; display:none;
+  }
+  .btn-login {
+    width:100%; background:linear-gradient(135deg,var(--gold),var(--gold-light));
+    color:var(--navy); border:none; border-radius:12px;
+    font-family:'DM Sans',sans-serif; font-size:1rem; font-weight:700;
+    padding:0.88rem; cursor:pointer;
+    box-shadow:0 4px 18px rgba(201,168,76,0.45);
+    transition:transform 0.15s,box-shadow 0.15s; letter-spacing:0.04em; margin-top:0.5rem;
+  }
+  .btn-login:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(201,168,76,0.6); }
+
+  .login-hint { text-align:center; margin-top:1.3rem; font-size:0.76rem; color:rgba(253,246,227,0.35); }
+  .login-hint span { color:rgba(201,168,76,0.65); }
+
+  /* ═══════════ MAIN APP ═══════════ */
+  #app { display:none; position:relative; z-index:5; }
+
+  /* ── HEADER ── */
+  header {
+    position:sticky; top:0; z-index:50;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:1rem 2.5rem;
+    border-bottom:1px solid rgba(201,168,76,0.2);
+    background:rgba(7,14,38,0.92);
+    backdrop-filter:blur(16px);
+  }
+  .logo-block { display:flex; align-items:center; gap:0.9rem; }
+  .logo-icon {
+    width:46px; height:46px;
+    background:linear-gradient(135deg,var(--gold),var(--gold-light));
+    border-radius:10px; display:flex; align-items:center; justify-content:center;
+    font-family:'Playfair Display',serif; font-size:1.3rem; font-weight:900;
+    color:var(--navy); box-shadow:0 3px 12px rgba(201,168,76,0.4); flex-shrink:0;
+  }
+  .logo-text h1 { font-family:'Playfair Display',serif; font-size:1.1rem; font-weight:700; color:var(--cream); line-height:1.2; }
+  .logo-text p  { font-size:0.7rem; color:var(--gold); font-weight:500; letter-spacing:0.1em; text-transform:uppercase; }
+
+  .header-right { display:flex; align-items:center; gap:0.85rem; }
+  .nav-badge { background:rgba(201,168,76,0.15); border:1px solid rgba(201,168,76,0.3); color:var(--gold-light); font-size:0.72rem; font-weight:700; padding:0.3rem 0.85rem; border-radius:99px; letter-spacing:0.08em; text-transform:uppercase; }
+
+  .user-chip { display:flex; align-items:center; gap:0.5rem; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); border-radius:99px; padding:0.3rem 0.9rem 0.3rem 0.4rem; }
+  .user-avatar { width:28px; height:28px; border-radius:50%; background:linear-gradient(135deg,var(--gold),var(--gold-light)); display:flex; align-items:center; justify-content:center; font-size:0.7rem; font-weight:700; color:var(--navy); }
+  .user-name { font-size:0.8rem; color:var(--cream); font-weight:500; }
+
+  .btn-logout { background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.3); color:#fca5a5; font-family:'DM Sans',sans-serif; font-size:0.8rem; font-weight:600; padding:0.35rem 0.9rem; border-radius:8px; cursor:pointer; transition:background 0.2s; }
+  .btn-logout:hover { background:rgba(239,68,68,0.3); }
+
+  /* ── HERO ── */
+  .hero { position:relative; text-align:center; padding:3rem 2rem 1.5rem; }
+  .hero-eyebrow { display:inline-block; background:rgba(201,168,76,0.15); border:1px solid rgba(201,168,76,0.3); color:var(--gold); font-size:0.72rem; font-weight:700; padding:0.3rem 1rem; border-radius:99px; letter-spacing:0.12em; text-transform:uppercase; margin-bottom:0.9rem; }
+  .hero h2 { font-family:'Playfair Display',serif; font-size:clamp(2rem,5vw,3rem); font-weight:900; color:var(--cream); line-height:1.1; }
+  .hero h2 span { color:var(--gold); }
+  .hero p { color:rgba(253,246,227,0.5); margin-top:0.65rem; font-size:0.95rem; }
+
+  /* ── MAIN WRAP ── */
+  .main-wrap { max-width:1020px; margin:0 auto; padding:1.5rem 1.5rem 4rem; display:flex; flex-direction:column; gap:1.75rem; }
+
+  /* ── CARD ── */
+  .card { background:rgba(253,246,227,0.97); border-radius:20px; padding:1.75rem 2rem; box-shadow:var(--shadow),0 0 0 1px rgba(201,168,76,0.12); animation:slideUp 0.45s ease both; }
+  @keyframes slideUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+
+  .card-title { font-family:'Playfair Display',serif; font-size:1.05rem; font-weight:700; color:var(--navy); margin-bottom:1.2rem; display:flex; align-items:center; gap:0.55rem; }
+  .card-title .dot { width:9px; height:9px; border-radius:50%; background:var(--gold); display:inline-block; }
+
+  /* ── FORM ── */
+  .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+  .form-grid.three { grid-template-columns:1fr 1fr 1fr; }
+  .field { display:flex; flex-direction:column; gap:0.3rem; }
+  .field label { font-size:0.75rem; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:0.06em; }
+  .field input,.field select { border:1.5px solid var(--border); border-radius:10px; padding:0.6rem 0.85rem; font-size:0.92rem; font-family:'DM Sans',sans-serif; color:var(--text); background:#fff; outline:none; transition:border-color 0.2s,box-shadow 0.2s; }
+  .field input:focus,.field select:focus { border-color:var(--gold); box-shadow:0 0 0 3px rgba(201,168,76,0.15); }
+
+  /* ── SUBJECTS ── */
+  #subjects-container { display:flex; flex-direction:column; gap:0.8rem; margin-top:0.4rem; }
+  .subject-row { display:grid; grid-template-columns:2fr 1fr 1fr 1fr auto; gap:0.7rem; align-items:center; background:#fff; border:1.5px solid var(--border); border-radius:12px; padding:0.75rem 1rem; transition:border-color 0.2s; }
+  .subject-row:hover { border-color:var(--gold); }
+  .subject-row input { border:none; outline:none; font-size:0.88rem; font-family:'DM Sans',sans-serif; color:var(--text); background:transparent; width:100%; padding:0.2rem 0; border-bottom:1.5px solid var(--border); transition:border-color 0.2s; }
+  .subject-row input:focus { border-color:var(--gold); }
+  .subject-row input::placeholder { color:#bbb; }
+  .col-label { font-size:0.68rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--muted); font-weight:600; margin-bottom:0.15rem; }
+  .marks-field { display:flex; flex-direction:column; }
+
+  .grade-pill { font-size:0.73rem; font-weight:700; letter-spacing:0.04em; padding:0.18rem 0.55rem; border-radius:99px; width:fit-content; margin-top:0.15rem; }
+  .grade-O{background:#d1fae5;color:#065f46}.grade-A{background:#dbeafe;color:#1e40af}.grade-B{background:#e0e7ff;color:#3730a3}.grade-C{background:#fef3c7;color:#92400e}.grade-F{background:#fee2e2;color:#991b1b}.grade-{background:#f3f4f6;color:#6b7280}
+
+  .btn-remove { background:none; border:none; cursor:pointer; color:#d1d5db; font-size:1.1rem; padding:0.2rem 0.35rem; border-radius:6px; transition:color 0.2s,background 0.2s; line-height:1; }
+  .btn-remove:hover { color:var(--fail); background:#fee2e2; }
+  .btn-add { display:flex; align-items:center; gap:0.5rem; background:none; border:1.5px dashed var(--gold); color:var(--gold); font-family:'DM Sans',sans-serif; font-size:0.88rem; font-weight:600; padding:0.6rem 1.1rem; border-radius:10px; cursor:pointer; transition:background 0.2s; margin-top:0.5rem; width:fit-content; }
+  .btn-add:hover { background:rgba(201,168,76,0.1); }
+
+  /* ── BUTTONS ── */
+  .actions { display:flex; gap:0.9rem; flex-wrap:wrap; margin-top:0.4rem; }
+  .btn-primary { background:linear-gradient(135deg,var(--navy),#1a2d6d); color:var(--gold-light); border:none; border-radius:12px; font-family:'DM Sans',sans-serif; font-size:0.92rem; font-weight:600; padding:0.75rem 1.75rem; cursor:pointer; box-shadow:0 4px 16px rgba(11,22,56,0.3); transition:transform 0.15s,box-shadow 0.15s; letter-spacing:0.03em; }
+  .btn-primary:hover { transform:translateY(-2px); box-shadow:0 8px 22px rgba(11,22,56,0.4); }
+  .btn-csv { background:linear-gradient(135deg,#16a34a,#22c55e); color:#fff; border:none; border-radius:12px; font-family:'DM Sans',sans-serif; font-size:0.92rem; font-weight:600; padding:0.75rem 1.5rem; cursor:pointer; box-shadow:0 4px 16px rgba(22,163,74,0.3); transition:transform 0.15s,box-shadow 0.15s; }
+  .btn-csv:hover { transform:translateY(-2px); box-shadow:0 8px 22px rgba(22,163,74,0.45); }
+  .btn-secondary { background:#fff; color:var(--navy); border:1.5px solid var(--border); border-radius:12px; font-family:'DM Sans',sans-serif; font-size:0.92rem; font-weight:600; padding:0.75rem 1.4rem; cursor:pointer; transition:border-color 0.2s,background 0.2s; }
+  .btn-secondary:hover { border-color:var(--gold); background:rgba(201,168,76,0.05); }
+  .btn-print { background:linear-gradient(135deg,var(--gold),var(--gold-light)); color:var(--navy); border:none; border-radius:12px; font-family:'DM Sans',sans-serif; font-size:0.92rem; font-weight:700; padding:0.75rem 1.4rem; cursor:pointer; box-shadow:0 4px 16px rgba(201,168,76,0.35); transition:transform 0.15s,box-shadow 0.15s; }
+  .btn-print:hover { transform:translateY(-2px); box-shadow:0 8px 22px rgba(201,168,76,0.5); }
+
+  /* ── RESULT CARD ── */
+  #result-card { display:none; background:linear-gradient(135deg,var(--navy),#1a2d6d); border-radius:20px; padding:2.5rem; color:var(--cream); box-shadow:0 12px 40px rgba(11,22,56,0.5); animation:slideUp 0.5s ease both; border:1px solid rgba(201,168,76,0.2); }
+  .result-header { text-align:center; border-bottom:1px solid rgba(201,168,76,0.3); padding-bottom:1.5rem; margin-bottom:1.5rem; }
+  .result-header .college-name { font-family:'Playfair Display',serif; font-size:1.5rem; font-weight:900; color:var(--gold-light); }
+  .result-header .sub { font-size:0.78rem; color:rgba(253,246,227,0.45); margin-top:0.2rem; letter-spacing:0.08em; text-transform:uppercase; }
+  .result-header .exam-badge { display:inline-block; background:rgba(201,168,76,0.2); border:1px solid rgba(201,168,76,0.35); color:var(--gold); font-size:0.72rem; font-weight:700; padding:0.25rem 0.85rem; border-radius:99px; margin-top:0.6rem; letter-spacing:0.1em; text-transform:uppercase; }
+
+  .result-meta { display:grid; grid-template-columns:1fr 1fr; gap:0.65rem 2rem; margin-bottom:1.5rem; }
+  .result-meta-item .key { font-size:0.68rem; text-transform:uppercase; letter-spacing:0.08em; color:var(--gold); font-weight:600; }
+  .result-meta-item .val { font-size:0.95rem; font-weight:500; color:var(--cream); margin-top:0.1rem; }
+
+  .result-table { width:100%; border-collapse:collapse; font-size:0.86rem; }
+  .result-table th { text-align:left; padding:0.55rem 0.7rem; font-size:0.68rem; text-transform:uppercase; letter-spacing:0.08em; color:var(--gold); font-weight:600; border-bottom:1px solid rgba(201,168,76,0.25); }
+  .result-table td { padding:0.6rem 0.7rem; border-bottom:1px solid rgba(255,255,255,0.06); color:rgba(253,246,227,0.85); }
+  .result-table tr:last-child td { border-bottom:none; }
+
+  .result-summary { margin-top:1.5rem; background:rgba(201,168,76,0.1); border:1px solid rgba(201,168,76,0.25); border-radius:14px; padding:1.25rem 1.5rem; display:flex; flex-wrap:wrap; gap:1.5rem; align-items:center; }
+  .summary-stat .s-label { font-size:0.68rem; text-transform:uppercase; letter-spacing:0.08em; color:rgba(201,168,76,0.8); font-weight:600; }
+  .summary-stat .s-val { font-family:'Playfair Display',serif; font-size:1.5rem; font-weight:700; color:var(--gold-light); line-height:1.1; }
+  .status-pill { display:inline-block; padding:0.3rem 1rem; border-radius:99px; font-size:0.82rem; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; margin-top:auto; }
+  .status-pass{background:rgba(34,197,94,0.2);color:#86efac;border:1px solid rgba(34,197,94,0.3);}
+  .status-fail{background:rgba(239,68,68,0.2);color:#fca5a5;border:1px solid rgba(239,68,68,0.3);}
+  .divider { height:1px; background:rgba(201,168,76,0.2); margin:1.25rem 0; }
+
+  /* ── TOAST ── */
+  #toast { position:fixed; bottom:2rem; right:2rem; z-index:1000; background:var(--navy); color:var(--gold-light); border:1px solid rgba(201,168,76,0.4); padding:0.8rem 1.4rem; border-radius:12px; font-size:0.88rem; font-weight:500; box-shadow:0 8px 24px rgba(0,0,0,0.35); opacity:0; transform:translateY(10px); transition:opacity 0.3s,transform 0.3s; pointer-events:none; }
+  #toast.show { opacity:1; transform:translateY(0); }
+
+  @media(max-width:680px){
+    header{padding:0.85rem 1.1rem;}
+    .form-grid,.form-grid.three{grid-template-columns:1fr;}
+    .subject-row{grid-template-columns:1fr 1fr;gap:0.45rem;}
+    .subject-row .col-subject{grid-column:1/-1;}
+    .main-wrap{padding:1rem 0.9rem 3rem;}
+    .login-card{padding:2rem 1.5rem;}
+    .header-right .nav-badge{display:none;}
+  }
+
+  @media print {
+    body{background:white;}
+    #bg-layer,header,.card:not(#result-card),#toast{display:none!important;}
+    #app{display:block!important;}
+    #result-card{display:block!important;box-shadow:none;background:white;color:black;border:1px solid #ccc;}
+    .result-header .college-name,.summary-stat .s-val{color:var(--navy);}
+    .result-table th,.result-meta-item .key,.summary-stat .s-label{color:#555;}
+    .result-table td,.result-meta-item .val{color:#111;}
+    .btn-print,.actions{display:none;}
+  }
+</style>
+</head>
+<body>
+
+<div id="bg-layer"></div>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-icon">SP</div>
+      <h2>Silli Polytechnic</h2>
+      <p>Mid Exam Portal · 2024–2027</p>
+    </div>
+    <div class="login-field">
+      <label>Username</label>
+      <input type="text" id="login-user" placeholder="Enter your username" autocomplete="off"/>
+    </div>
+    <div class="login-field">
+      <label>Password</label>
+      <input type="password" id="login-pass" placeholder="Enter your password" onkeydown="if(event.key==='Enter')doLogin()"/>
+    </div>
+    <div class="login-error" id="login-error">⚠️ Invalid username or password.</div>
+    <button class="btn-login" onclick="doLogin()">🔐 Sign In to Portal</button>
+    <div class="login-hint">
+      Demo &nbsp;·&nbsp; User: <span>admin</span> &nbsp;|&nbsp; Pass: <span>silli2024</span>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app">
+  <header>
+    <div class="logo-block">
+      <div class="logo-icon">SP</div>
+      <div class="logo-text">
+        <h1>Silli Polytechnic</h1>
+        <p>Marks Management Portal</p>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="nav-badge">Session 2024–2027</div>
+      <div class="user-chip">
+        <div class="user-avatar" id="user-avatar">A</div>
+        <span class="user-name" id="user-name-display">Admin</span>
+      </div>
+      <button class="btn-logout" onclick="doLogout()">⏻ Logout</button>
+    </div>
+  </header>
+
+  <div class="hero">
+    <div class="hero-eyebrow">📋 Mid Semester Examination</div>
+    <h2>Mid Exam <span>Result</span> Entry</h2>
+    <p>Enter and manage student mid-term marks for Session 2024–2027</p>
+  </div>
+
+  <div class="main-wrap">
+
+    <!-- STUDENT INFO -->
+    <div class="card" style="animation-delay:0.05s">
+      <div class="card-title"><span class="dot"></span> Student Information</div>
+      <div class="form-grid">
+        <div class="field"><label>Student Name</label><input type="text" id="student-name" placeholder="e.g. Rahul Kumar"/></div>
+        <div class="field"><label>Roll Number</label><input type="text" id="roll-no" placeholder="e.g. SP2024001"/></div>
+        <div class="field">
+          <label>Branch / Department</label>
+          <select id="branch">
+            <option value="">— Select Branch —</option>
+            <option>Civil Engineering</option>
+            <option>Electrical Engineering</option>
+            <option>Mechanical Engineering</option>
+            <option>Computer Science &amp; Engineering</option>
+            <option>Electronics &amp; Communication</option>
+            <option>Mining Engineering</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Semester</label>
+          <select id="semester">
+            <option value="">— Select Semester —</option>
+            <option>1st Semester</option><option>2nd Semester</option>
+            <option>3rd Semester</option><option>4th Semester</option>
+            <option>5th Semester</option><option>6th Semester</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- EXAM INFO -->
+    <div class="card" style="animation-delay:0.1s">
+      <div class="card-title"><span class="dot"></span> Examination Details</div>
+      <div class="form-grid three">
+        <div class="field">
+          <label>Exam Type</label>
+          <select id="exam-type">
+            <option>Mid Semester Exam</option>
+            <option>End Semester Exam</option>
+            <option>Internal Assessment</option>
+            <option>Practical Exam</option>
+            <option>Supplementary Exam</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Academic Year</label>
+          <select id="acad-year">
+            <option>2024–2025</option><option>2025–2026</option><option>2026–2027</option>
+          </select>
+        </div>
+        <div class="field"><label>Exam Date</label><input type="date" id="exam-date"/></div>
+      </div>
+    </div>
+
+    <!-- SUBJECTS -->
+    <div class="card" style="animation-delay:0.15s">
+      <div class="card-title"><span class="dot"></span> Subject-wise Marks</div>
+      <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 36px;gap:0.7rem;padding:0 1rem 0.35rem;align-items:end;">
+        <span class="col-label">Subject Name</span>
+        <span class="col-label">Max Marks</span>
+        <span class="col-label">Marks Obtained</span>
+        <span class="col-label">Grade</span>
+        <span></span>
+      </div>
+      <div id="subjects-container"></div>
+      <button class="btn-add" onclick="addSubject()">＋ Add Subject</button>
+    </div>
+
+    <!-- ACTIONS -->
+    <div class="card" style="animation-delay:0.2s;padding:1.4rem 2rem;">
+      <div class="actions">
+        <button class="btn-primary" onclick="generateResult()">📊 Generate Result</button>
+        <button class="btn-csv"     onclick="exportCSV()">⬇ Export CSV</button>
+        <button class="btn-secondary" onclick="clearAll()">↺ Clear All</button>
+      </div>
+    </div>
+
+    <!-- RESULT -->
+    <div id="result-card">
+      <div class="result-header">
+        <div class="college-name">Silli Polytechnic</div>
+        <div class="sub">Jharkhand, India &nbsp;·&nbsp; Marks Sheet &nbsp;·&nbsp; Session 2024–2027</div>
+        <div class="exam-badge" id="result-exam-badge">Mid Semester Exam</div>
+      </div>
+      <div class="result-meta" id="result-meta"></div>
+      <div class="divider"></div>
+      <table class="result-table">
+        <thead><tr><th>#</th><th>Subject</th><th>Max</th><th>Obtained</th><th>%</th><th>Grade</th><th>Status</th></tr></thead>
+        <tbody id="result-tbody"></tbody>
+      </table>
+      <div class="result-summary" id="result-summary"></div>
+      <div class="actions" style="margin-top:1.5rem;">
+        <button class="btn-print" onclick="window.print()">🖨️ Print Marksheet</button>
+        <button class="btn-csv"   onclick="exportCSV()">⬇ Export CSV</button>
+        <button class="btn-secondary" onclick="document.getElementById('result-card').style.display='none'">✕ Close</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+/* ─── AUTH ─── */
+const USERS = { admin:'silli2024', principal:'principal@123', teacher:'teacher2024' };
+let currentUser = null;
+
+function doLogin() {
+  const u = document.getElementById('login-user').value.trim().toLowerCase();
+  const p = document.getElementById('login-pass').value;
+  const err = document.getElementById('login-error');
+  if (USERS[u] && USERS[u] === p) {
+    currentUser = u;
+    err.style.display = 'none';
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    document.getElementById('user-avatar').textContent = u[0].toUpperCase();
+    document.getElementById('user-name-display').textContent = u.charAt(0).toUpperCase()+u.slice(1);
+    showToast('👋 Welcome, '+u.charAt(0).toUpperCase()+u.slice(1)+'!');
+  } else {
+    err.style.display = 'block';
+    document.getElementById('login-pass').value = '';
+    document.getElementById('login-pass').focus();
+  }
+}
+
+function doLogout() {
+  currentUser = null;
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('login-user').value = '';
+  document.getElementById('login-pass').value = '';
+  document.getElementById('login-error').style.display = 'none';
+  showToast('👋 Logged out successfully.');
+}
+
+/* ─── MARKS ─── */
+let subjectCount = 0;
+const defaultSubjects = [
+  {name:'Mathematics',max:30},{name:'Physics',max:30},
+  {name:'English',max:30},{name:'Workshop Practice',max:25},
+];
+
+function getGrade(obt, max) {
+  const p = (obt/max)*100;
+  if (obt<0||obt>max) return {grade:'—',cls:''};
+  if (p>=90) return {grade:'O', cls:'grade-O'};
+  if (p>=75) return {grade:'A+',cls:'grade-A'};
+  if (p>=60) return {grade:'A', cls:'grade-A'};
+  if (p>=50) return {grade:'B', cls:'grade-B'};
+  if (p>=40) return {grade:'C', cls:'grade-C'};
+  return {grade:'F',cls:'grade-F'};
+}
+
+function addSubject(name='',max=30) {
+  const id = ++subjectCount;
+  const div = document.createElement('div');
+  div.className='subject-row'; div.id=`sub-${id}`;
+  div.innerHTML=`
+    <div class="marks-field col-subject">
+      <span class="col-label">Subject</span>
+      <input type="text" placeholder="Subject name" value="${name}" oninput="updateGrade(${id})"/>
+    </div>
+    <div class="marks-field">
+      <span class="col-label">Max</span>
+      <input type="number" min="1" max="500" value="${max}" oninput="updateGrade(${id})"/>
+    </div>
+    <div class="marks-field">
+      <span class="col-label">Obtained</span>
+      <input type="number" min="0" placeholder="—" oninput="updateGrade(${id})"/>
+    </div>
+    <div class="marks-field">
+      <span class="col-label">Grade</span>
+      <span class="grade-pill grade-" id="grade-${id}">—</span>
+    </div>
+    <button class="btn-remove" onclick="removeSubject(${id})">✕</button>
+  `;
+  document.getElementById('subjects-container').appendChild(div);
+  div.style.animation='slideUp 0.3s ease both';
+}
+
+function updateGrade(id) {
+  const row=document.getElementById(`sub-${id}`); if(!row)return;
+  const nums=row.querySelectorAll('input[type="number"]');
+  const max=parseFloat(nums[0].value)||0, obt=parseFloat(nums[1].value);
+  const pill=document.getElementById(`grade-${id}`);
+  if(isNaN(obt)||!max){pill.textContent='—';pill.className='grade-pill grade-';return;}
+  const {grade,cls}=getGrade(obt,max);
+  pill.textContent=grade; pill.className=`grade-pill ${cls}`;
+}
+
+function removeSubject(id){const el=document.getElementById(`sub-${id}`);if(el)el.remove();}
+
+function collectData() {
+  const name=document.getElementById('student-name').value.trim();
+  const roll=document.getElementById('roll-no').value.trim();
+  const branch=document.getElementById('branch').value;
+  const semester=document.getElementById('semester').value;
+  const examType=document.getElementById('exam-type').value;
+  const acadYear=document.getElementById('acad-year').value;
+  const examDate=document.getElementById('exam-date').value;
+
+  if(!name||!roll||!branch||!semester){showToast('⚠️ Please fill in all student details.');return null;}
+  const rows=document.querySelectorAll('#subjects-container .subject-row');
+  if(!rows.length){showToast('⚠️ Add at least one subject.');return null;}
+
+  let totalMax=0,totalObt=0,allPass=true;
+  const subjects=[];
+  for(let i=0;i<rows.length;i++){
+    const inputs=rows[i].querySelectorAll('input');
+    const subName=inputs[0].value.trim()||`Subject ${i+1}`;
+    const nums=rows[i].querySelectorAll('input[type="number"]');
+    const max=parseFloat(nums[0].value)||0, obt=parseFloat(nums[1].value);
+    if(isNaN(obt)||!max){showToast(`⚠️ Enter marks for "${subName}".`);return null;}
+    if(obt<0||obt>max){showToast(`⚠️ Invalid marks for "${subName}".`);return null;}
+    const pct=((obt/max)*100).toFixed(1);
+    const {grade,cls}=getGrade(obt,max);
+    const pass=(obt/max)>=0.40; if(!pass)allPass=false;
+    totalMax+=max; totalObt+=obt;
+    subjects.push({subName,max,obt,pct,grade,cls,pass});
+  }
+  const overallPct=((totalObt/totalMax)*100).toFixed(2);
+  const {grade:overallGrade}=getGrade(totalObt,totalMax);
+  return {name,roll,branch,semester,examType,acadYear,examDate,subjects,totalMax,totalObt,overallPct,overallGrade,allPass};
+}
+
+function generateResult() {
+  const d=collectData(); if(!d)return;
+  document.getElementById('result-exam-badge').textContent=d.examType;
+  document.getElementById('result-meta').innerHTML=`
+    <div class="result-meta-item"><span class="key">Student Name</span><span class="val">${d.name}</span></div>
+    <div class="result-meta-item"><span class="key">Roll Number</span><span class="val">${d.roll}</span></div>
+    <div class="result-meta-item"><span class="key">Branch</span><span class="val">${d.branch}</span></div>
+    <div class="result-meta-item"><span class="key">Semester</span><span class="val">${d.semester}</span></div>
+    <div class="result-meta-item"><span class="key">Exam Type</span><span class="val">${d.examType}</span></div>
+    <div class="result-meta-item"><span class="key">Academic Year</span><span class="val">${d.acadYear}</span></div>
+    ${d.examDate?`<div class="result-meta-item"><span class="key">Exam Date</span><span class="val">${new Date(d.examDate).toLocaleDateString('en-IN',{day:'2-digit',month:'long',year:'numeric'})}</span></div>`:''}
+    <div class="result-meta-item"><span class="key">Generated On</span><span class="val">${new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'long',year:'numeric'})}</span></div>
+  `;
+  document.getElementById('result-tbody').innerHTML=d.subjects.map((r,i)=>`
+    <tr>
+      <td>${i+1}</td><td>${r.subName}</td><td>${r.max}</td>
+      <td style="font-weight:600">${r.obt}</td><td>${r.pct}%</td>
+      <td><span class="grade-pill ${r.cls}" style="font-size:0.7rem">${r.grade}</span></td>
+      <td><span style="font-size:0.78rem;font-weight:600;color:${r.pass?'#86efac':'#fca5a5'}">${r.pass?'PASS':'FAIL'}</span></td>
+    </tr>
+  `).join('');
+  document.getElementById('result-summary').innerHTML=`
+    <div class="summary-stat"><span class="s-label">Total Marks</span><span class="s-val">${d.totalObt} / ${d.totalMax}</span></div>
+    <div class="summary-stat"><span class="s-label">Percentage</span><span class="s-val">${d.overallPct}%</span></div>
+    <div class="summary-stat"><span class="s-label">Overall Grade</span><span class="s-val">${d.overallGrade}</span></div>
+    <div class="summary-stat" style="margin-left:auto">
+      <span class="s-label">Result</span>
+      <span class="status-pill ${d.allPass?'status-pass':'status-fail'}">${d.allPass?'✓ PASS':'✗ FAIL'}</span>
+    </div>
+  `;
+  const rc=document.getElementById('result-card');
+  rc.style.display='block';
+  rc.scrollIntoView({behavior:'smooth',block:'start'});
+  showToast('✅ Result generated successfully!');
+}
+
+/* ─── CSV EXPORT ─── */
+function exportCSV() {
+  const d=collectData(); if(!d)return;
+  const rows=[
+    ['Silli Polytechnic — Mid Exam Result Sheet'],
+    ['Session: 2024-2027'],
+    [],
+    ['Student Name',d.name],['Roll Number',d.roll],
+    ['Branch',d.branch],['Semester',d.semester],
+    ['Exam Type',d.examType],['Academic Year',d.acadYear],
+    ['Exam Date',d.examDate||''],
+    ['Generated On',new Date().toLocaleDateString('en-IN')],
+    [],
+    ['#','Subject','Max Marks','Marks Obtained','Percentage','Grade','Status'],
+    ...d.subjects.map((s,i)=>[i+1,s.subName,s.max,s.obt,s.pct+'%',s.grade,s.pass?'PASS':'FAIL']),
+    [],
+    ['','TOTAL',d.totalMax,d.totalObt,d.overallPct+'%',d.overallGrade,d.allPass?'PASS':'FAIL'],
+  ];
+  const csv=rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob=new Blob([csv],{type:'text/csv'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download=`${d.roll}_${d.name.replace(/\s+/g,'_')}_MidExam.csv`;
+  a.click(); URL.revokeObjectURL(url);
+  showToast('⬇ CSV exported successfully!');
+}
+
+function clearAll() {
+  ['student-name','roll-no','exam-date'].forEach(id=>document.getElementById(id).value='');
+  ['branch','semester'].forEach(id=>document.getElementById(id).selectedIndex=0);
+  document.getElementById('subjects-container').innerHTML='';
+  document.getElementById('result-card').style.display='none';
+  subjectCount=0;
+  defaultSubjects.forEach(s=>addSubject(s.name,s.max));
+  showToast('↺ Form cleared.');
+}
+
+function showToast(msg) {
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+window.onload=()=>{
+  defaultSubjects.forEach(s=>addSubject(s.name,s.max));
+  document.getElementById('exam-date').valueAsDate=new Date();
+  document.getElementById('login-user').focus();
+};
+</script>
+</body>
+</html>
